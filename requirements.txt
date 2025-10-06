@@ -1,5 +1,5 @@
-streamlit
-openai
-langchain
-langchain-openai 
-langsmith
+streamlit==1.38.0
+langchain-core==0.2.23
+langchain-openai==0.1.14
+langsmith==0.1.46
+openai==1.47.0
