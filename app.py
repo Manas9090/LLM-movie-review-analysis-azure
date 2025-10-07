@@ -1,33 +1,26 @@
 import os
+import openai
 import streamlit as st
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
-from langsmith import traceable
 
-# --- Load environment variables ---
+# --- Load OpenAI API key ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
-LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT", "movie-review-app")
-LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2", "true")
+openai.api_key = OPENAI_API_KEY
 
-# --- LLM setup ---
-llm = ChatOpenAI(
-    model="gpt-4",
-    temperature=0.6,
-    api_key=OPENAI_API_KEY
-)
-
-# --- Prompt setup ---
-prompt = ChatPromptTemplate.from_template(
-    "You are a professional movie critic. Analyze this review in detail and provide constructive feedback:\n\n{review}"
-)
-
-# --- LangSmith tracing wrapper ---
-@traceable
+# --- Helper function to call OpenAI ---
 def analyze_review(review: str) -> str:
-    chain = prompt | llm
-    response = chain.invoke({"review": review})
-    return response.content
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a professional movie critic."},
+                {"role": "user", "content": f"Analyze this review in detail and provide constructive feedback:\n\n{review}"}
+            ],
+            temperature=0.6,
+            max_tokens=500
+        )
+        return response.choices[0].message["content"].strip()
+    except Exception as e:
+        return f"Error calling OpenAI API: {e}"
 
 # --- Streamlit UI ---
 st.set_page_config(page_title="Movie Review Analyzer", layout="centered")
@@ -38,13 +31,13 @@ review_input = st.text_area("Write your review here", height=200)
 
 if st.button("Analyze Review"):
     if review_input.strip():
-        with st.spinner("Analyzing..."):
-            try:
+        if not OPENAI_API_KEY:
+            st.error("OpenAI API key not set. Please configure the OPENAI_API_KEY environment variable.")
+        else:
+            with st.spinner("Analyzing..."):
                 result = analyze_review(review_input)
-                st.success("Analysis Complete!")
-                st.markdown("### LLM Feedback:")
-                st.write(result)
-            except Exception as e:
-                st.error(f"Error during analysis: {e}")
+            st.success("Analysis Complete!")
+            st.markdown("### LLM Feedback:")
+            st.write(result)
     else:
         st.warning("Please enter a review before analyzing.")
