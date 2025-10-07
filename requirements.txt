@@ -1,7 +1,5 @@
 streamlit==1.38.0
-langchain-core==0.3.24     # <-- compatible with langchain-openai 0.2.6
-langchain-openai==0.2.6
-langsmith==0.1.78
-openai==1.47.0
+openai==0.28.0
+python-dateutil==2.9.0.post0
 tqdm==4.66.1
 requests==2.32.0
