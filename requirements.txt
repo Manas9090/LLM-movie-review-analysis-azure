@@ -3,3 +3,5 @@ langchain-core==0.2.23
 langchain-openai==0.1.14
 langsmith==0.1.78
 openai==1.47.0
+tqdm
+requests
